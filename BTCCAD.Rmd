@@ -75,7 +75,7 @@ BTCPlot <- plot_ly(data = BTCPriceCAD,
     xref = "paper",
     yref = "paper",
     x = 1,
-    y = .8,
+    y = .9,
     text = "Source: pro-api.coinmarketcap.com",
     showarrow = FALSE) %>%
   
