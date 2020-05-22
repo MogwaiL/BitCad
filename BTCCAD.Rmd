@@ -1,0 +1,92 @@
+---
+title: "Getting Data from APIs in R"
+output: html_notebook
+---
+
+Some packages that will be requried.
+```{r}
+suppressMessages(library(dplyr))
+suppressMessages(library(tidyr))
+suppressMessages(library(readxl))
+suppressMessages(library(tinytex))
+suppressMessages(library(plotly))
+suppressMessages(library(lubridate))
+suppressMessages(library(htmltools))
+suppressMessages(library(DT))
+suppressMessages(library(httr))
+suppressMessages(library(jsonlite))
+```
+
+```{r}
+trying <- GET("https://pro-api.coinmarketcap.com/v1/cryptocurrency/map",
+  add_headers("X-CMC_PRO_API_KEY" = "2b53a965-2d4f-4bfb-886e-7652300fb794"),
+  query = list("symbol" = "BTC"))
+trying
+```
+
+```{r}
+texty <- content(trying, "text")
+texty <- fromJSON(txt = texty)
+texty
+```
+
+
+```{r}
+check <- GET("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
+             add_headers("X-CMC_PRO_API_KEY" = "2b53a965-2d4f-4bfb-886e-7652300fb794"),
+  query = list("id" = "1", "convert" = "CAD"))
+check
+```
+
+
+
+
+```{r}
+texty1 <- content(check, "text")
+texty1 <- fromJSON(txt = texty1)
+datey <- texty1$data$`1`$quote$CAD$last_updated
+textey <- texty1$data$`1`$quote$CAD$price
+datey
+textey
+```
+
+```{r}
+BTCPriceCAD <- data.frame("TimeStamp" = as.POSIXlt(datey, format = "%Y-%m-%dT%H:%M:%OS"), "Price" = textey)
+
+```
+
+```{r}
+check <- GET("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
+             add_headers("X-CMC_PRO_API_KEY" = "2b53a965-2d4f-4bfb-886e-7652300fb794"),
+  query = list("id" = "1", "convert" = "CAD"))
+
+texty1 <- content(check, "text")
+texty1 <- fromJSON(txt = texty1)
+datey <- texty1$data$`1`$quote$CAD$last_updated
+textey <- texty1$data$`1`$quote$CAD$price
+BTCPriceCAD <- rbind(BTCPriceCAD, list(as.POSIXlt(datey, format = "%Y-%m-%dT%H:%M:%OS"), textey))
+
+BTCPlot <- plot_ly(data = BTCPriceCAD,
+                   x = ~TimeStamp,
+                   y = ~Price,
+                   type = "scatter",
+                   mode = "line")%>%
+  add_annotations(
+    xref = "paper",
+    yref = "paper",
+    x = 1,
+    y = .8,
+    text = "Source: pro-api.coinmarketcap.com",
+    showarrow = FALSE) %>%
+  
+  layout(
+         title = 'Bitcoin Price in Canadian Dollars',
+         xaxis = list(title = "Timestamp UTC"),
+         yaxis = list(title = "($ Canadian)"))
+       
+BTCPlot
+
+```
+
+
+
